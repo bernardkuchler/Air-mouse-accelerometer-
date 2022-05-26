@@ -1,0 +1,60 @@
+Demo projekt za USB VComPort, blinkanje LED diod in branje modre tipke
+     tipka je na PA0 in se njeno stanje zapiše na LED diodo (modro)
+
+Postopek :
+
+1. New project -> STM32 Project -> Board -> 407DISC1
+2. CubeMX: Spremeniti USB Host v USB Device :
+	Connectivity -> USB_OTG_FS -> Mode v Device Only
+	Middleware   -> DEVICE_USB in Class Virtual Com Port
+	
+3. generirati kodo in dodati naslednje odseke :
+	main.c :
+		izpis na Micro-USB port 
+			/* USER CODE BEGIN PV */
+			#define BUFSIZE 256
+			char SendBuffer[BUFSIZE];
+			
+			/* USER CODE END PV */
+			
+			v glavni zanki :
+			snprintf (SendBuffer,BUFSIZE,"USB:2 secs\r\n");
+	    	CDC_Transmit_FS(SendBuffer,strlen(SendBuffer));
+
+      		HAL_Delay(2000);
+			
+		LED diode
+			zacetno stanje :
+			  /* USER CODE BEGIN 2 */
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12,1);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,0);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14,1);
+			  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15,0);
+			
+			  /* USER CODE END 2 */
+			
+			
+			glavna zanka :	
+			
+				  /* USER CODE BEGIN WHILE */
+				  while (1)
+				  {
+				
+					 HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+					 HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+					 HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+				
+					 KeyState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+					 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, KeyState);
+				
+				
+					  snprintf(SendBuffer,BUFSIZE,"Hello World [%d]: Key:%d\r\n",Counter++,KeyState);
+					  CDC_Transmit_FS(SendBuffer,strlen(SendBuffer));
+				
+				    /* USER CODE END WHILE */
+				
+				    /* USER CODE BEGIN 3 */
+					  HAL_Delay(1000);
+				  }
+				  /* USER CODE END 3 */
+				
